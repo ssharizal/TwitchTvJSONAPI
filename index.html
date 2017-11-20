@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<title> TwitchTv JSON API</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--Coder : Syed Sharizal
+* can see whether Free Code Camp is currently streaming on Twitch.tv.
+* can click the status output and be sent directly to the Free Code Camp's Twitch.tv channel.
+* if a Twitch user is currently streaming, I can see additional details about what they are streaming.
+
+UPDATE: Due to a change in conditions on API usage explained here Twitch.tv now requires an API key, but we've 
+built a workaround. Use https://wind-bow.gomix.me/twitch-api instead of twitch's API 
+base URL (i.e. https://api.twitch.tv/kraken ) and you'll still be able to get account information, 
+without needing to sign up for an API key.
+    -->
+
+<head>
+    <!-- Bootstrap, fontawesome, jQuery-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+        .logo {
+            max-width: 50px;
+            max-height: 50px;
+            border-radius: 50%;
+            border: 3px solid;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="jumbotron">
+        <h1 class="display-3"> <i class="fa fa-twitch fa-6" aria-hidden="true"></i> TwitchTV JSON API </h1>
+        <p class="lead">Checks who is currently streaming on Twitch.tv using JSON API</p>
+
+    </div>
+
+    <div class="container">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active selector" href="#!" id="all">All</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link selector" href="#!" id="online">Online</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link selector" href="#!" id="offline">Offline</a>
+            </li>
+        </ul>
+
+        <div class="input-group col-md-6">
+            <input class="form-control" placeholder="Filter for..." type="text" id="myInput">
+            <span class="input-group-btn">
+              <button class="btn btn-secondary" type="button">Filter!</button>
+            </span>
+        </div>
+
+        <table class="table table-hover table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Streamer</th>
+                    <th>Name</th>
+                    <th>Game</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody class="results" id="myTable">
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="container p-4">
+        <a href="https://www.github.com/ssharizal" class="btn btn-secondary" target="_blank"><span class="fa fa-github mr-2"></span> Git @ssharizal </a>
+    </div>
+
+    <script>
+        var channels = ["ESL_SC2", "OgamingSC2", "cretetion", "freecodecamp", "storbeck", "habathcx", "RobotCaleb", "noobs2ninjas"];
+
+        channels.forEach(arrChnl => {
+
+
+            $.getJSON('https://wind-bow.glitch.me/twitch-api/streams/' + arrChnl, function(data) {
+
+                var status;
+                if (data.stream === null) {
+                    status = "offline";
+
+                    html = '<tr id="offline" class="offline"><th scope="row"><i class="fa fa-twitch" aria-hidden="true"></i></th><td>' + arrChnl + '</td><td>' + "N/A" + '</td><td>' + "N/A" + '</td><td><a href="https://www.twitch.tv/' + arrChnl + '" class="text-muted" target="_blank">' + status + '</a></td></tr>';
+                    $('.results').append(html);
+                } else {
+                    status = "online";
+
+                    var logo = data.stream.channel.logo;
+                    var name = data.stream.channel.name;
+                    var game = data.stream.channel.game;
+                    var description = data.stream.channel.status;
+
+                    html = '<tr id="online" class="online"><th scope="row"><img src="' + logo + '" class="logo"></th><td>' + name + '</td><td>' + game + '</td><td>' + description + '</td><td><a href="https://www.twitch.tv/' + name + '" class="text-success" target="_blank">' + status + '</a></td></tr>';
+                    $('.results').append(html);
+                }
+            });
+        });
+
+        $(document).ready(function() {
+            $("#myInput").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#myTable tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+
+            $(".selector").click(function() {
+                $(".selector").removeClass("active");
+                $(this).addClass("active");
+
+                var status = $(this).attr('id');
+                if (status === "all") {
+                    $(".online, .offline").removeClass("collapse out");
+                } else if (status === "online") {
+                    $(".online").removeClass("collapse out");
+                    $(".offline").addClass("collapse out");
+                } else {
+                    $(".offline").removeClass("collapse out");
+                    $(".online").addClass("collapse out");
+                }
+            });
+
+        });
+    </script>
+</body>
+
+</html>
